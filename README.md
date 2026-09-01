@@ -14,7 +14,7 @@
 <img alt="selftest" src="https://img.shields.io/badge/selftest-29%2F29%20green-2ea44f?style=flat-square">
 </p>
 
-<p><b>中文</b> · <a href="README_en.md">English</a>　·　作者：匿名者　·　版本：2.3</p>
+<p><b>中文</b> · <a href="README_en.md">English</a>　·　作者：adomore　·　版本：2.3</p>
 
 </div>
 
