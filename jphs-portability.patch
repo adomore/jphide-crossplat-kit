@@ -1,0 +1,85 @@
+--- a/jphide.c	2026-08-31 11:12:03.592304966 +0000
++++ b/jphide.c	2026-08-31 11:23:12.110980177 +0000
+@@ -20,6 +20,9 @@
+ #include <sys/time.h>		
+ #include <sys/resource.h>		
+ #include <sys/stat.h>		
++#ifndef O_BINARY
++#define O_BINARY 0
++#endif
+ #include "bf.h"
+ #include "cdjpeg.h"
+ #include "version.h"
+@@ -260,7 +263,7 @@
+  FILE * output_file;
+ 
+ 
+- if ((f = open(hidefilename,O_RDONLY)) < 0) {
++ if ((f = open(hidefilename,O_RDONLY|O_BINARY)) < 0) {
+   perror("Can't open hide file");
+   return (1);
+  }
+@@ -270,13 +273,13 @@
+  okfile = 1;
+  data_pos = 0;
+ 
+- input_file = fopen(infilename,"r");
++ input_file = fopen(infilename,"rb");
+  if (input_file == NULL) {
+   perror("Can't open input file");
+   return (1);
+  }	
+ 
+- output_file = fopen(outfilename,"w");
++ output_file = fopen(outfilename,"wb");
+  if (output_file == NULL) {
+   perror("Can't open output file");
+   return (1);
+--- a/jpseek.c	2026-08-31 11:12:03.592304966 +0000
++++ b/jpseek.c	2026-08-31 11:23:12.110839267 +0000
+@@ -20,6 +20,9 @@
+ #include <sys/time.h>		
+ #include <sys/resource.h>		
+ #include <sys/stat.h>		
++#ifndef O_BINARY
++#define O_BINARY 0
++#endif
+ #include "bf.h"
+ #include "cdjpeg.h"
+ #include "version.h"
+@@ -199,13 +202,13 @@
+ 
+ 
+ 
+- input_file = fopen(infilename,"r");
++ input_file = fopen(infilename,"rb");
+  if (input_file == NULL) {
+   perror("Can't open input file");
+   return (1);
+  }	
+ 
+- if ((f = open(seekfilename,O_WRONLY|O_TRUNC|O_CREAT)) < 0) {
++ if ((f = open(seekfilename,O_WRONLY|O_TRUNC|O_CREAT|O_BINARY,0644)) < 0) {
+   perror("Can't open seek file");
+   return (1);
+  }
+--- a/Makefile	2026-08-31 11:12:03.545780760 +0000
++++ b/Makefile	2026-08-31 11:23:12.111069546 +0000
+@@ -11,12 +11,13 @@
+ ### (might break Blowfish which is big-endian by default)
+ LE_CFLAGS = -DBF_LE
+ 
+-JP_CFLAGS = $(CFLAGS_COMMON) \
+-	    -I./jpeg-8a
+-BF_CFLAGS = $(CFLAGS_COMMON)
++JP_CFLAGS = $(CFLAGS_COMMON) $(BF_ENDIAN)
++BF_ENDIAN = -DBF_LE   # jphide upstream is little-endian; see stegdetect break_jphide.c
++BF_CFLAGS = $(CFLAGS_COMMON) $(BF_ENDIAN)
+ 
+ LIBS = -ljpeg
+-LDFLAGS = $(LIBS)
++LDLIBS = $(LIBS)
++LDFLAGS =
+ 
+ ## programs
+ INSTALL = install

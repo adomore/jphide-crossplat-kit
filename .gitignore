@@ -1,0 +1,19 @@
+# --- Build artifacts (rebuild with ./build.sh) ---
+*.o
+/jpcrack
+/jphoracle
+/jpseek5
+/v5diff
+
+# --- Generated stegdetect/stegbreak build tree ---
+# Cloned + patched + compiled by build-stegdetect-kali.sh; not source.
+/stegdetect-build/
+
+# --- Assembled Kali release outputs (published as GitHub Release assets) ---
+# Rebuild with make-kali-release.sh; tarball is attached to the Release, not tracked.
+/jphide-crossplat-kit-*-kali-amd64/
+/jphide-crossplat-kit-*-kali-amd64.tar.gz
+
+# --- OS / editor noise ---
+.DS_Store
+*.swp
