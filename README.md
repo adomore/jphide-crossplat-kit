@@ -2,7 +2,7 @@
 
 <h1>jphide-crossplat-kit</h1>
 
-<p><b>跨平台 JPHide 隐写诊断与提取工具包</b></p>
+<p><b>跨平台 JPHide 隐写诊断与载荷提取工具包</b></p>
 
 <p>针对 <b>Windows 版 JPHS</b> 与 <b>Kali / Debian 12 上的 <code>h3xx/jphs</code> + <code>stegdetect</code></b><br>之间跨平台失效问题的诊断与提取工具包。</p>
 
