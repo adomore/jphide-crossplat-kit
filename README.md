@@ -1,18 +1,45 @@
-# jphide-crossplat-kit
+<div align="center">
 
-**中文** · [English](README_en.md)
+<h1>jphide-crossplat-kit</h1>
 
-针对 **Windows 版 JPHS** 与 **Kali / Debian 12 上的 `h3xx/jphs` + `stegdetect`**
-之间跨平台失效问题的诊断工具包。
+<p><b>跨平台 JPHide 隐写诊断与提取工具包</b></p>
 
-作者：匿名者
-版本：2.3
+<p>针对 <b>Windows 版 JPHS</b> 与 <b>Kali / Debian 12 上的 <code>h3xx/jphs</code> + <code>stegdetect</code></b><br>之间跨平台失效问题的诊断与提取工具包。</p>
 
-本文档的英文镜像是 `README_en.md`。两份文件逐节对齐、同步维护。
+<p>
+<a href="https://github.com/adomore/jphide-crossplat-kit/releases/latest"><img alt="release" src="https://img.shields.io/github/v/release/adomore/jphide-crossplat-kit?style=flat-square&label=release&color=1793d1"></a>
+<a href="LICENSE"><img alt="license" src="https://img.shields.io/github/license/adomore/jphide-crossplat-kit?style=flat-square&color=blue"></a>
+<img alt="platform" src="https://img.shields.io/badge/platform-Kali%20%2F%20Debian%2012-1793d1?style=flat-square">
+<img alt="lang" src="https://img.shields.io/badge/lang-C%20%2B%20Python-555?style=flat-square">
+<img alt="selftest" src="https://img.shields.io/badge/selftest-29%2F29%20green-2ea44f?style=flat-square">
+</p>
 
-**文档导航。** 新手请先看 `GETTING_STARTED_zh.md`（`GETTING_STARTED.md`）；完整参考是
-`USER_MANUAL_zh.md`（`USER_MANUAL.md`）。本 README 记录的是工具包为之而生、并已验证的
-跨平台实证发现。
+<p><b>中文</b> · <a href="README_en.md">English</a>　·　作者：匿名者　·　版本：2.3</p>
+
+</div>
+
+---
+
+**核心能力**
+
+- **判别** — `jphoracle`：识别容器版本（v3 / v5）与 Blowfish 字节序（大端 / 小端）
+- **提取** — `jpseek5`：在 Linux 上原生取出 v3/v5 载荷（Blowfish + LZO1X，逐字节验证），无需 Wine
+- **爆破** — `jpcrack`：多线程字典攻击，`-o` 命中即一步写出明文
+- **修复** — `crlf_check.py`：检测并修复 Windows text-mode（CRLF）破坏
+- **构建** — `build-stegdetect-kali.sh`：在 Kali / Debian 上从源码编出 `stegdetect` / `stegbreak`（含工具链探测）
+- **自检** — `selftest.sh`：29 道可复现门禁
+
+> [!TIP]
+> **预编译 Kali (amd64) 包**：到 [Releases](https://github.com/adomore/jphide-crossplat-kit/releases/latest) 下载 `jphide-crossplat-kit-2.3-kali-amd64.tar.gz`，解压后运行 `./selftest.sh` 应当 29/29 全绿。
+
+> [!NOTE]
+> **文档导航。** 新手请先看 [`GETTING_STARTED_zh.md`](GETTING_STARTED_zh.md)（英文 [`GETTING_STARTED.md`](GETTING_STARTED.md)）；完整参考是 [`USER_MANUAL_zh.md`](USER_MANUAL_zh.md)（英文 [`USER_MANUAL.md`](USER_MANUAL.md)）。本 README 记录的是工具包为之而生、并已验证的跨平台实证发现。英文镜像为 [`README_en.md`](README_en.md)，两份文件逐节对齐、同步维护。
+
+<div align="center">
+
+[**这是什么**](#1-这是什么) · [**实证发现**](#2-实证发现) · [**目录内容**](#3-目录内容) · [**编译**](#4-编译) · [**用法**](#5-用法) · [**门禁自检**](#6-门禁自检) · [**移植补丁**](#7-移植性补丁) · [**局限**](#8-本工具包解决不了的问题) · [**来源与许可**](#9-来源与许可)
+
+</div>
 
 ---
 
@@ -34,47 +61,58 @@
 
 以下每一条都在容器里复现过，不是从文档推断的。
 
-**`h3xx/jphs` 与 Windows 版 JPHS 是两种互不兼容的容器格式。**
+### `h3xx/jphs` 与 Windows 版 JPHS 是互不兼容的两种容器
+
 `h3xx/jphs` 写着 `HS_MINOR_VERSION 3`；Windows 包（`JPHSWIN.EXE`、`jphs05.zip`）
 是 JPHS 0.5。`stegdetect` 的 `break_jphide.c` 把两者实现为两条独立的验证路径。
 v3 的 Blowfish 密钥就是口令本身，头部是单个 8 字节块；v5 的密钥是 DCT 派生 IV 的
 前 6 字节拼接口令，头部是两个块，多一个冗余长度字段和第二次 IV 校验。密钥派生不同
 加上头部布局不同，意味着 v3 的读取器连 v5 容器的长度字段都恢复不出来。
 
-**`h3xx/jphs` 默认的 Blowfish 字节序是错的。这一条已被证明，不是推断。**
+### `h3xx/jphs` 默认的 Blowfish 字节序是错的（已证明，非推断）
+
 `bf_config.h` 默认走 `B_Blowfish_Encrypt`（大端），仓库自己的 `TODO` 也承认这个问题
 从未定论。用参考源码编出的 32 位 `stegbreak`，喂入含正确口令的词表，结果是：
 
-    stego_v3_le.jph : jphide[v3](TestPass123)     破解成功
-    stego_v3_be.jph : negative                    根本不被识别
-    cover_clean.jph : negative                    阴性对照正确
+```text
+stego_v3_le.jph : jphide[v3](TestPass123)     破解成功
+stego_v3_be.jph : negative                    根本不被识别
+cover_clean.jph : negative                    阴性对照正确
+```
 
 参考实现接受小端容器，对大端容器直接拒绝。它还自行标出了版本号，独立印证了 v3 判定。
 编译 `h3xx/jphs` 必须加 `-DBF_LE`，否则它的产物对其它任何 jphide 工具都是不可读的。
 
-**`jpseek.c` 在 Debian 12 / Kali 上编译不过。**
+### `jpseek.c` 在 Debian 12 / Kali 上编译不过
+
 `open(seekfilename, O_WRONLY|O_TRUNC|O_CREAT)` 少了 mode 参数；`-O2` 下
 `_FORTIFY_SOURCE` 生效时，glibc 会抛出 `__open_missing_mode` 硬错误。
 
-**仓库自带的 Makefile 链接不了，链接修好后二进制运行时还会中止。**
+### 自带 Makefile 链接不了，修好后运行仍会中止
+
 `LDFLAGS` 放在目标文件之前，GNU ld 不认。把顺序改对之后，`-I./jpeg-8a` 配 `-ljpeg`
 （Debian 上是 libjpeg-turbo）会报
 `JPEG parameter struct mismatch: library thinks size is 656, caller expects 712`。
 
-**`stegdetect` 在 x86-64 上需要 `-fcommon`，而且它的 jphide 判决不稳定。**
+### `stegdetect` 在 x86-64 上需要 `-fcommon`，且 jphide 判决不稳定
+
 不加会因 `multiple definition of 'progname'` 链接失败。编出来之后，`fixtures/` 里
 那张干净原图被报成 `f5[1.69](***)` —— 误报。`stego_v3_be.jpg` 报 `jphide(*)`，而
 `stego_v3_le.jpg`（同工具、同载荷、同原图）在默认灵敏度下漏检，要 `-s 3` 才出来。
 该检测器是带固定阈值的卡方检验，图像过小时会静默返回。
 
-**jphide v5 识别已用真实 JPHSWIN 0.5 样本做逐位验证。** 包内附带
+### jphide v5 识别已用真实 JPHSWIN 0.5 样本逐位验证
+
+包内附带
 `fixtures/stego_v5_real.jpg`，由 Windows 上的 JPHS 0.5 用口令 `jeremy23` 制作。
 `jphoracle` 将其判为 `jphide v5 / little-endian`，读出载荷长度 105 字节；Windows 版
 `stegbreak.exe` 对同一文件独立报出 `jphide[v5](jeremy23)`。v5 的头部逻辑——密钥 =
 `iv[0..5]||口令`、双块头、冗余长度字段与两次 IV 交叉校验——与参考实现逐位吻合。
 `selftest.sh` 里的四道 v5 门禁就是针对这个真实样本断言的。
 
-**v5 载荷提取已彻底攻克，且在 Linux 上原生可用（无需 Wine）。** 该变换是从
+### v5 载荷提取已攻克，Linux 原生可用（无需 Wine）
+
+该变换是从
 `jpseek.exe` 的反编译中还原的，并对八个已知明文样本做了逐字节验证（`fixtures/v5_samples/`
 里七个受控样本，加上真实的 `jeremy23` 样本）。v5 载荷是：
 
@@ -90,12 +128,16 @@ v3 的 Blowfish 密钥就是口令本身，头部是单个 8 字节块；v5 的�
 
 `jpseek5` 实现了完整流程，在 Kali 上无需 Wine 即可提取 v5 载荷。推导过程见 `v5-findings.md`。
 
-**字典攻击已内置：`jpcrack`。** 它先解码载体一次，然后拿字典里每个候选口令同时对
+### 内置字典攻击：`jpcrack`
+
+它先解码载体一次，然后拿字典里每个候选口令同时对
 v3 和 v5 的头部校验做测试——与 `stegbreak` 用的是同一套校验——命中时报出版本号与口令。
 加 `-o` 会直接接上 `jpseek5` 写出提取的载荷，于是一条命令即可从「未知口令的容器」走到
 「明文」：
 
-    ./jpcrack -o out.bin stego.jpg wordlist.txt
+```sh
+./jpcrack -o out.bin stego.jpg wordlist.txt
+```
 
 `-t N` 设置线程数（默认：全部核心）。和 `stegbreak` 一样，`jpcrack` 在测试前会用
 JtR 风格的规则对每个字典词做变形——首字母大写、追加/前置数字、常见后缀、leetspeak、
@@ -109,18 +151,23 @@ stegbreak 完全一致。
 对强随机口令无能为力——jphide 的 Blowfish 没有可利用的缺陷，所以口令强度是唯一的
 攻击面。与只验证口令的 `stegbreak` 不同，`jpcrack -o` 还会写出载荷。
 
-**Kali 不提供 `stegdetect` 与 `stegbreak`。** Kali bug tracker 的 #1688 请求提交于
+### Kali 不提供 `stegdetect` 与 `stegbreak`
+
+Kali bug tracker 的 #1688 请求提交于
 2014-08-23，于 2020-02-11 以 `won't fix` 关闭，管理员给出的理由是该 fork 已无人维护、
 上游站点已死。Debian 曾收录该包直到 2008 年的 0.6-5 QA 上传（`Architecture: source
 i386`，从未为 amd64 构建过），此后移除。两边 `apt install stegdetect` 都会失败。唯一
 的路是从源码编译，见 `build-stegdetect-kali.sh`。
 
-**`stegbreak` 直接喂 JPEG 会段错误。** 32 位与 64 位构建下均可复现，`-t p`、`-t o`、
+### `stegbreak` 直接喂 JPEG 会段错误
+
+32 位与 64 位构建下均可复现，`-t p`、`-t o`、
 `-t j` 三种模式都崩。文档里的 `-c` 转换路径可用，但它同样以 139 退出：它会先写出一个
 完整有效的 `.jph`，然后在退出清理阶段崩溃，所以退出码必须忽略。2007 年的一个 Debian
 bug 报告过同类崩溃，从未被修复。
 
-**GCC 14 及以后会直接编不过，而且修复方案不是一份固定的标志清单。**
+### GCC 14+ 会编不过，且修复不是固定的标志清单
+
 `jpeg-6b` 自带的是 autoconf 2.12 的 configure，它的编译器探测程序就是一句
 `main(){return(0);}`。GCC 14 把 `implicit-int`、`implicit-function-declaration`、
 `int-conversion`、`incompatible-pointer-types` 与 `return-mismatch` 从警告提升为错误，
@@ -130,7 +177,9 @@ bug 报告过同类崩溃，从未被修复。
 `no option '-Wreturn-mismatch'` 拒绝 `-Wno-error=return-mismatch`，而 GCC 14+ 恰恰需要
 它。所以 `build-stegdetect-kali.sh` 会逐个做试编译探测，只保留本机编译器接受的标志。
 
-**GCC 15 会以另一个原因再次编不过。** GCC 15 把默认标准从 `gnu17` 改成了 `gnu23`，而
+### GCC 15 会因另一个原因再次编不过
+
+GCC 15 把默认标准从 `gnu17` 改成了 `gnu23`，而
 C23 把 `true`、`false`、`bool` 变成了关键字。`stegdetect.c` 第 765 行声明的是
 `float f, f2, sum, false;`，于是该文件不再是合法 C，构建以
 `expected identifier or '(' before 'false'` 失败。`-std=gnu17` 可修。这是全树唯一的
@@ -140,10 +189,13 @@ C23 仍然接受；`bf.c`、`jphide.c`、`jpseek.c` 与 `jphoracle.c` 在 C23 �
 它同时会在 configure 之前预检 32 位编译器，因为当 `gcc-multilib` 与默认 `gcc` 版本不
 匹配时，会由一个完全不同的原因产生同样误导的 "cannot create executables" 报错。
 
-**`stegdetect` 从不提取任何东西。** 它做的是检测与嵌入系统识别。`stegbreak` 能恢复
+### `stegdetect` 从不提取任何东西
+
+它做的是检测与嵌入系统识别。`stegbreak` 能恢复
 口令但不写出载荷。提取只能靠 `jpseek`。
 
-**Windows text-mode 破坏确有其事，但在本场景中多半不是主因。**
+### Windows text-mode 破坏确有其事，但多半不是主因
+
 `jphide.c` 用 `fopen(...,"r")` / `fopen(...,"w")` 打开 JPEG，用 `open(..., O_RDONLY)`
 打开载荷 —— 都没有要求二进制模式。在一个健康的 61,300 字节容器上模拟 Windows CRT
 会插入 97 个 CR 字节；结果仍能作为合法的 640x480 图像打开，但 `stegdetect` 报
@@ -170,7 +222,7 @@ text mode，Windows 自己的 `jpseek` 也会跟着坏。始终拿不到 `O_BINA
 | `jpcrack.c` | v3/v5 字典攻击，多线程；`-o` 命中后直接提取 |
 | `v5diff.c` | v5 载荷分析器：以四种解读导出原始比特 |
 | `v5-findings.md` | v5 格式的工作原理与还原过程 |
-| `selftest.sh` | 10 道门禁的可复现验证套件 |
+| `selftest.sh` | 29 道门禁的可复现验证套件 |
 | `build.sh` | `jphoracle` 的一行式编译 |
 | `bf.c`、`bf.h`、`bf_config.h`、`ltable.h` | 支撑文件（见第 9 节） |
 | `fixtures/` | `selftest.sh` 使用的已验证测试语料 |
@@ -179,7 +231,7 @@ text mode，Windows 自己的 `jpseek` 也会跟着坏。始终拿不到 `O_BINA
 
 ## 4. 编译
 
-```
+```sh
 apt install build-essential libjpeg-dev
 ./build.sh
 ```
@@ -193,7 +245,7 @@ apt install build-essential libjpeg-dev
 
 判别容器：
 
-```
+```sh
 ./jphoracle windows_stego.jpg '你的口令'
 ```
 
@@ -202,7 +254,7 @@ apt install build-essential libjpeg-dev
 
 检查 text-mode 破坏：
 
-```
+```sh
 python3 crlf_check.py suspect.jpg [original_cover.jpg]
 python3 crlf_check.py --repair suspect.jpg
 ```
@@ -214,19 +266,22 @@ python3 crlf_check.py --repair suspect.jpg
 
 ## 6. 门禁自检
 
-```
+```sh
 ./selftest.sh
 ```
 
-10 道门禁，出厂全绿：v3/大端与 v3/小端判别正确、载荷长度正确、干净原图无匹配、错误
-口令无匹配、text-mode 破坏被标出、健康文件不被误标、被破坏文件对 oracle 不可见、
-修复结果与破坏前逐字节相同、修复后容器重新可读。
+**29 道门禁，出厂全绿**，覆盖四个方面：
+
+- **判别**（G1–G9）：v3 大端 / 小端分类正确、v3 载荷长度正确（860 B）、真实 v5 样本判为 v5 小端并读出长度（105 B）、干净原图与真实 v5 原图均无匹配、错误口令无匹配。
+- **v5 提取**（G10–G17）：`fixtures/v5_samples/` 里七个受控样本，加真实 `jeremy23` 样本，逐字节还原明文。
+- **字典攻击**（G18–G24）：`jpcrack` 对 v3/v5 容器命中口令、`-o` 端到端出明文、规则引擎变形命中、`-n` 逐字模式（关规则后基础词不中）、5 万个错误候选无误报。
+- **text-mode 破坏**（G25–G29）：CRLF 破坏被标出、健康文件不误标、破坏文件修复前对 oracle 不可见、修复后与破坏前逐字节相同且容器重新可读。
 
 ---
 
 ## 7. 移植性补丁
 
-```
+```sh
 git clone https://github.com/h3xx/jphs
 cd jphs && patch -p1 -i ../jphs-portability.patch
 ```
@@ -257,3 +312,17 @@ Windows 做的容器只有两条路：用 Wine 跑 `jphs05` 的 `jpseek.exe`，�
 `break_jphide.c` 中头部验证逻辑的独立重实现，该文件为 BSD 许可，算法归功于他。
 `jphs-portability.patch` 针对 GPL 许可的 `h3xx/jphs`。fixtures 均为本地生成，不含任何
 第三方图像素材。
+
+---
+
+<div align="center">
+<sub>
+📘 <a href="GETTING_STARTED_zh.md">入门</a> ·
+📖 <a href="USER_MANUAL_zh.md">用户手册</a> ·
+🔬 <a href="v5-findings.md">v5 推导</a> ·
+⬇️ <a href="https://github.com/adomore/jphide-crossplat-kit/releases/latest">下载预编译包</a> ·
+⚖️ <a href="LICENSE">GPL-3.0</a>
+</sub>
+<br><br>
+<sub>作者：匿名者 · 版本 2.3 · 仅供安全研究、数字取证与 CTF 等合法用途</sub>
+</div>

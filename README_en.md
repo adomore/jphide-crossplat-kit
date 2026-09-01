@@ -1,20 +1,45 @@
-# jphide-crossplat-kit
+<div align="center">
 
-[中文](README.md) · **English**
+<h1>jphide-crossplat-kit</h1>
 
-Diagnostic kit for cross-platform failures between **JPHS on Windows** and
-**`h3xx/jphs` + `stegdetect` on Kali / Debian 12**.
+<p><b>Cross-platform JPHide steganography diagnostics &amp; payload extraction</b></p>
 
-Author: Anonymous
-Version: 2.3
+<p>Diagnostic kit for cross-platform failures between <b>JPHS on Windows</b> and<br><b><code>h3xx/jphs</code> + <code>stegdetect</code> on Kali / Debian 12</b>.</p>
 
-The mirrored Chinese edition of this document is `README.md`. The two files
-are maintained in lockstep, section by section.
+<p>
+<a href="https://github.com/adomore/jphide-crossplat-kit/releases/latest"><img alt="release" src="https://img.shields.io/github/v/release/adomore/jphide-crossplat-kit?style=flat-square&label=release&color=1793d1"></a>
+<a href="LICENSE"><img alt="license" src="https://img.shields.io/github/license/adomore/jphide-crossplat-kit?style=flat-square&color=blue"></a>
+<img alt="platform" src="https://img.shields.io/badge/platform-Kali%20%2F%20Debian%2012-1793d1?style=flat-square">
+<img alt="lang" src="https://img.shields.io/badge/lang-C%20%2B%20Python-555?style=flat-square">
+<img alt="selftest" src="https://img.shields.io/badge/selftest-29%2F29%20green-2ea44f?style=flat-square">
+</p>
 
-**Documentation.** New users should start with `GETTING_STARTED.md`
-(`GETTING_STARTED_zh.md`); the full reference is `USER_MANUAL.md`
-(`USER_MANUAL_zh.md`). This README records the verified cross-platform findings
-the kit was built to prove.
+<p><a href="README.md">中文</a> · <b>English</b>　·　Author: Anonymous　·　Version: 2.3</p>
+
+</div>
+
+---
+
+**At a glance**
+
+- **Classify** — `jphoracle`: identify container version (v3 / v5) and Blowfish byte order (big / little-endian)
+- **Extract** — `jpseek5`: recover v3/v5 payloads natively on Linux (Blowfish + LZO1X, byte-exact verified), no Wine
+- **Crack** — `jpcrack`: multi-threaded dictionary attack; `-o` extracts the plaintext on a hit
+- **Repair** — `crlf_check.py`: detect and repair Windows text-mode (CRLF) damage
+- **Build** — `build-stegdetect-kali.sh`: build `stegdetect` / `stegbreak` from source on Kali / Debian (with toolchain probing)
+- **Self-test** — `selftest.sh`: 29 reproducible gates
+
+> [!TIP]
+> **Prebuilt Kali (amd64) bundle** — download `jphide-crossplat-kit-2.3-kali-amd64.tar.gz` from [Releases](https://github.com/adomore/jphide-crossplat-kit/releases/latest); after unpacking, `./selftest.sh` should report 29/29 all green.
+
+> [!NOTE]
+> **Documentation.** New users should start with [`GETTING_STARTED.md`](GETTING_STARTED.md) (Chinese [`GETTING_STARTED_zh.md`](GETTING_STARTED_zh.md)); the full reference is [`USER_MANUAL.md`](USER_MANUAL.md) (Chinese [`USER_MANUAL_zh.md`](USER_MANUAL_zh.md)). This README records the verified cross-platform findings the kit was built to prove. The mirrored Chinese edition is [`README.md`](README.md); the two files are maintained in lockstep, section by section.
+
+<div align="center">
+
+[**What this is**](#1-what-this-is) · [**Verified findings**](#2-verified-findings) · [**Contents**](#3-contents) · [**Build**](#4-build) · [**Usage**](#5-usage) · [**Gate suite**](#6-gate-suite) · [**Portability patch**](#7-the-portability-patch) · [**Limits**](#8-what-this-kit-does-not-solve) · [**Provenance &amp; license**](#9-provenance-and-licensing)
+
+</div>
 
 ---
 
@@ -37,7 +62,8 @@ questions about a specific file:
 
 Everything below was reproduced in a container, not inferred from documentation.
 
-**`h3xx/jphs` and Windows JPHS are two incompatible container formats.**
+### `h3xx/jphs` and Windows JPHS are two incompatible container formats
+
 `h3xx/jphs` carries `HS_MINOR_VERSION 3`; the Windows package (`JPHSWIN.EXE`,
 `jphs05.zip`) is JPHS 0.5. `stegdetect`'s `break_jphide.c` implements the two as
 separate validation paths. In v3 the Blowfish key is the passphrase alone and
@@ -47,33 +73,39 @@ with a redundant length field and a second IV check. Different key derivation
 plus different header layout means a v3 reader cannot even recover the length
 field of a v5 container.
 
-**The default Blowfish byte order in `h3xx/jphs` is wrong. This is proven, not
-inferred.** `bf_config.h` defaults to `B_Blowfish_Encrypt` (big-endian), and the
+### The default Blowfish byte order in `h3xx/jphs` is wrong (proven, not inferred)
+
+`bf_config.h` defaults to `B_Blowfish_Encrypt` (big-endian), and the
 repository's own `TODO` admits the question was never settled. A 32-bit
 `stegbreak` built from the reference sources, given a wordlist containing the
 correct passphrase, returns:
 
-    stego_v3_le.jph : jphide[v3](TestPass123)     cracked
-    stego_v3_be.jph : negative                    not recognised at all
-    cover_clean.jph : negative                    correct negative control
+```text
+stego_v3_le.jph : jphide[v3](TestPass123)     cracked
+stego_v3_be.jph : negative                    not recognised at all
+cover_clean.jph : negative                    correct negative control
+```
 
 The reference implementation accepts the little-endian container and rejects the
 big-endian one outright. It also labels the version itself, independently
 confirming the v3 classification. Build `h3xx/jphs` with `-DBF_LE` or its output
 is unreadable by every other jphide tool.
 
-**`jpseek.c` does not compile on Debian 12 / Kali.**
+### `jpseek.c` does not compile on Debian 12 / Kali
+
 `open(seekfilename, O_WRONLY|O_TRUNC|O_CREAT)` omits the mode argument; with
 `_FORTIFY_SOURCE` active under `-O2`, glibc raises `__open_missing_mode` as a
 hard error.
 
-**The stock Makefile cannot link, and the resulting binary aborts at runtime.**
+### The stock Makefile cannot link, and the resulting binary aborts at runtime
+
 `LDFLAGS` is placed before the object files, which GNU ld ignores. Once the link
 order is fixed, `-I./jpeg-8a` combined with `-ljpeg` (libjpeg-turbo on Debian)
 gives `JPEG parameter struct mismatch: library thinks size is 656, caller
 expects 712`.
 
-**`stegdetect` needs `-fcommon` on x86-64 and its jphide verdict is unstable.**
+### `stegdetect` needs `-fcommon` on x86-64 and its jphide verdict is unstable
+
 Without it the link fails on `multiple definition of 'progname'`. Once built,
 the clean cover image in `fixtures/` is reported as `f5[1.69](***)` — a false
 positive. `stego_v3_be.jpg` is flagged `jphide(*)`, while `stego_v3_le.jpg` —
@@ -81,8 +113,9 @@ same tool, same payload, same cover — is missed at default sensitivity and onl
 appears at `-s 3`. The detector is a chi-squared test with fixed thresholds, and
 it returns silently when the image is too small.
 
-**jphide v5 identification is verified byte-exact against a real JPHSWIN 0.5
-sample.** The kit ships `fixtures/stego_v5_real.jpg`, made by JPHS 0.5 on Windows
+### jphide v5 identification is verified byte-exact against a real JPHSWIN 0.5 sample
+
+The kit ships `fixtures/stego_v5_real.jpg`, made by JPHS 0.5 on Windows
 with passphrase `jeremy23`. `jphoracle` classifies it as `jphide v5 /
 little-endian` and reads its payload length as 105 bytes; Windows
 `stegbreak.exe` independently reports `jphide[v5](jeremy23)` on the same file.
@@ -91,7 +124,9 @@ redundant length field and both IV cross-checks — matches the reference
 implementation exactly. The four v5 gates in `selftest.sh` assert this against
 the real sample.
 
-**v5 payload extraction is fully solved and native on Linux.** The transform was
+### v5 payload extraction is fully solved and native on Linux
+
+The transform was
 recovered from the `jpseek.exe` decompile and verified byte-exact against eight
 known-plaintext samples (seven controlled in `fixtures/v5_samples/`, plus the
 real `jeremy23` sample). The v5 payload is:
@@ -111,13 +146,17 @@ real `jeremy23` sample). The v5 payload is:
 `jpseek5` implements the whole path and extracts v5 payloads on Kali without
 Wine. `v5-findings.md` records the derivation.
 
-**Dictionary attack is included: `jpcrack`.** It decodes the cover once, then
+### Dictionary attack is included: `jpcrack`
+
+It decodes the cover once, then
 tries each wordlist candidate against both the v3 and v5 header checks — the same
 validation `stegbreak` uses — and reports the version and passphrase on a hit.
 With `-o` it chains straight into `jpseek5` and writes the extracted payload, so
 a single command goes from an unknown-passphrase container to the plaintext:
 
-    ./jpcrack -o out.bin stego.jpg wordlist.txt
+```sh
+./jpcrack -o out.bin stego.jpg wordlist.txt
+```
 
 `-t N` sets the thread count (default: all cores). Like `stegbreak`, `jpcrack`
 mangles each wordlist entry with JtR-style rules before testing — capitalisation,
@@ -140,7 +179,9 @@ block cross-check, and the redundant-length range), so the false-positive rate i
 about 2^-64 — a wrong passphrase does not produce a spurious hit even across tens
 of millions of candidates.
 
-**Kali does not ship `stegdetect` or `stegbreak`.** Kali bug tracker request
+### Kali does not ship `stegdetect` or `stegbreak`
+
+Kali bug tracker request
 #1688, filed 2014-08-23, was closed 2020-02-11 with resolution `won't fix`, the
 administrator citing the unmaintained fork and the dead upstream site. Debian
 carried the package until the 0.6-5 QA upload of 2008 — `Architecture: source
@@ -148,14 +189,17 @@ i386`, never built for amd64 — and later dropped it. `apt install stegdetect`
 fails on both. Building from source is the only route; see
 `build-stegdetect-kali.sh`.
 
-**`stegbreak` segfaults when handed a JPEG directly.** Reproduced in both 32-bit
+### `stegbreak` segfaults when handed a JPEG directly
+
+Reproduced in both 32-bit
 and 64-bit builds, across `-t p`, `-t o` and `-t j`. The documented `-c`
 conversion path works, but it too exits 139: it writes a complete, valid `.jph`
 and then crashes during teardown, so the exit code must be ignored. A 2007
 Debian bug reported the same class of crash and it was never fixed.
 
-**GCC 14 and later break the build outright, and the fix is not a fixed flag
-list.** `jpeg-6b` ships an autoconf 2.12 configure whose compiler probe is
+### GCC 14 and later break the build, and the fix is not a fixed flag list
+
+`jpeg-6b` ships an autoconf 2.12 configure whose compiler probe is
 literally `main(){return(0);}`. GCC 14 promoted `implicit-int`,
 `implicit-function-declaration`, `int-conversion`, `incompatible-pointer-types`
 and `return-mismatch` from warnings to errors, so that probe fails and configure
@@ -167,7 +211,9 @@ with `no option '-Wreturn-mismatch'`, while GCC 14+ needs it. So
 `build-stegdetect-kali.sh` probes each flag with a test compile and keeps only
 what the local compiler accepts.
 
-**GCC 15 breaks it again, for a different reason.** GCC 15 changed the default
+### GCC 15 breaks it again, for a different reason
+
+GCC 15 changed the default
 from `gnu17` to `gnu23`, and C23 made `true`, `false` and `bool` keywords.
 `stegdetect.c` line 765 declares `float f, f2, sum, false;`, so the file stops
 being valid C and the build dies with `expected identifier or '(' before
@@ -181,11 +227,14 @@ configuring, since a `gcc-multilib` that does not match the default `gcc`
 produces the same misleading "cannot create executables" message from a
 completely different cause.
 
-**`stegdetect` never extracts anything.** It detects and identifies the
+### `stegdetect` never extracts anything
+
+It detects and identifies the
 embedding system. `stegbreak` recovers a passphrase but does not write out the
 payload. Extraction is `jpseek`'s job only.
 
-**Windows text-mode damage is real but is probably not the primary cause here.**
+### Windows text-mode damage is real but probably not the primary cause here
+
 `jphide.c` opens the JPEG with `fopen(...,"r")` / `fopen(...,"w")` and the
 payload with `open(..., O_RDONLY)` — none request binary mode. Simulating the
 Windows CRT on a healthy 61,300-byte container inserts 97 CR bytes; the result
@@ -214,7 +263,7 @@ the more plausible place for this defect to bite.
 | `jpcrack.c` | v3/v5 dictionary attack, multi-threaded; `-o` extracts on a hit |
 | `v5diff.c` | v5 payload analyzer: dumps raw bits in all interpretations |
 | `v5-findings.md` | how the v5 format works and how it was recovered |
-| `selftest.sh` | 10-gate reproducible verification suite |
+| `selftest.sh` | 29-gate reproducible verification suite |
 | `build.sh` | One-line build for `jphoracle` |
 | `bf.c`, `bf.h`, `bf_config.h`, `ltable.h` | Support files (see section 9) |
 | `fixtures/` | Verified test corpus used by `selftest.sh` |
@@ -223,7 +272,7 @@ the more plausible place for this defect to bite.
 
 ## 4. Build
 
-```
+```sh
 apt install build-essential libjpeg-dev
 ./build.sh
 ```
@@ -237,7 +286,7 @@ apt install build-essential libjpeg-dev
 
 Classify a container:
 
-```
+```sh
 ./jphoracle windows_stego.jpg 'your passphrase'
 ```
 
@@ -247,7 +296,7 @@ passphrase is wrong, the file carries nothing, or the container is damaged.
 
 Check for text-mode damage:
 
-```
+```sh
 python3 crlf_check.py suspect.jpg [original_cover.jpg]
 python3 crlf_check.py --repair suspect.jpg
 ```
@@ -259,21 +308,22 @@ byte on the Windows side is not recoverable this way.
 
 ## 6. Gate suite
 
-```
+```sh
 ./selftest.sh
 ```
 
-Ten gates, all green as shipped: correct v3/big-endian and v3/little-endian
-classification, correct payload length, no match on a clean cover, no match on a
-wrong passphrase, text-mode damage flagged, healthy file not flagged, damaged
-file invisible to the oracle, repair byte-identical to the pre-damage container,
-and repaired container readable again.
+**Twenty-nine gates, all green as shipped**, covering four areas:
+
+- **Identification** (G1–G9): correct v3 big/little-endian classification, correct v3 payload length (860 B), the real v5 sample classified as v5 little-endian with its length read (105 B), no match on the clean cover or the real v5 cover, and no match on a wrong passphrase.
+- **v5 extraction** (G10–G17): the seven controlled samples in `fixtures/v5_samples/` plus the real `jeremy23` sample, each extracted to exact plaintext.
+- **Dictionary attack** (G18–G24): `jpcrack` finding the passphrase on v3 and v5 containers, end-to-end plaintext via `-o`, a mangled base word cracking through the rule engine, `-n` verbatim mode (base word alone does not crack with rules off), and 50k wrong candidates producing no false positive.
+- **Text-mode damage** (G25–G29): CRLF damage flagged, a healthy file not flagged, a damaged file invisible to the oracle before repair, repair byte-identical to the pre-damage container, and the repaired container readable again.
 
 ---
 
 ## 7. The portability patch
 
-```
+```sh
 git clone https://github.com/h3xx/jphs
 cd jphs && patch -p1 -i ../jphs-portability.patch
 ```
@@ -307,3 +357,17 @@ public domain and is byte-identical to `jphide_table.c` in `stegdetect`.
 `break_jphide.c` by Niels Provos, which is BSD-licensed; the algorithm is
 credited to him. `jphs-portability.patch` targets `h3xx/jphs`, which is GPL.
 Fixtures were generated locally and contain no third-party imagery.
+
+---
+
+<div align="center">
+<sub>
+📘 <a href="GETTING_STARTED.md">Getting started</a> ·
+📖 <a href="USER_MANUAL.md">User manual</a> ·
+🔬 <a href="v5-findings.md">v5 derivation</a> ·
+⬇️ <a href="https://github.com/adomore/jphide-crossplat-kit/releases/latest">Download prebuilt bundle</a> ·
+⚖️ <a href="LICENSE">GPL-3.0</a>
+</sub>
+<br><br>
+<sub>Author: Anonymous · Version 2.3 · For security research, digital forensics, and CTF use only</sub>
+</div>
