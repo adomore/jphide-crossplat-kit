@@ -14,7 +14,7 @@
 <img alt="selftest" src="https://img.shields.io/badge/selftest-29%2F29%20green-2ea44f?style=flat-square">
 </p>
 
-<p><a href="README.md">中文</a> · <b>English</b>　·　Author: Anonymous　·　Version: 2.3</p>
+<p><a href="README.md">中文</a> · <b>English</b>　·　Author: adomore　·　Version: 2.3</p>
 
 </div>
 
