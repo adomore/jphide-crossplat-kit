@@ -14,7 +14,7 @@
 <img alt="selftest" src="https://img.shields.io/badge/selftest-29%2F29%20green-2ea44f?style=flat-square">
 </p>
 
-<p><a href="README.md">中文</a> · <b>English</b>　·　Author: adomore　·　Version: 2.3</p>
+<p><a href="README.md">中文</a> · <b>English</b>　·　Author: adomore　·　Version: 2.3.1</p>
 
 </div>
 
@@ -30,7 +30,7 @@
 - **Self-test** — `selftest.sh`: 29 reproducible gates
 
 > [!TIP]
-> **Prebuilt Kali (amd64) bundle** — download `jphide-crossplat-kit-2.3-kali-amd64.tar.gz` from [Releases](https://github.com/adomore/jphide-crossplat-kit/releases/latest); after unpacking, `./selftest.sh` should report 29/29 all green.
+> **Prebuilt Kali (amd64) bundle** — download `jphide-crossplat-kit-2.3.1-kali-amd64.tar.gz` from [Releases](https://github.com/adomore/jphide-crossplat-kit/releases/latest); after unpacking, `./selftest.sh` should report 29/29 all green.
 
 > [!NOTE]
 > **Documentation.** New users should start with [`GETTING_STARTED.md`](GETTING_STARTED.md) (Chinese [`GETTING_STARTED_zh.md`](GETTING_STARTED_zh.md)); the full reference is [`USER_MANUAL.md`](USER_MANUAL.md) (Chinese [`USER_MANUAL_zh.md`](USER_MANUAL_zh.md)). This README records the verified cross-platform findings the kit was built to prove. The mirrored Chinese edition is [`README.md`](README.md); the two files are maintained in lockstep, section by section.
@@ -369,5 +369,5 @@ Fixtures were generated locally and contain no third-party imagery.
 ⚖️ <a href="LICENSE">GPL-3.0</a>
 </sub>
 <br><br>
-<sub>Author: Anonymous · Version 2.3 · For security research, digital forensics, and CTF use only</sub>
+<sub>Author: adomore · Version 2.3.1 · For security research, digital forensics, and CTF use only</sub>
 </div>

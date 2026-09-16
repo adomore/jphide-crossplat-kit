@@ -1,7 +1,7 @@
 # jphide-crossplat-kit —— 新手入门
 
 作者：匿名者
-版本：2.3
+版本：2.3.1
 
 本文档的英文镜像是 `GETTING_STARTED.md`。两份文件逐节对齐、同步维护。完整参考见
 `USER_MANUAL_zh.md`；工具包背后的诊断实证见 `README.md`。

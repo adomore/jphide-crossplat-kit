@@ -1,7 +1,7 @@
 # jphide-crossplat-kit — Getting Started
 
 Author: Anonymous
-Version: 2.3
+Version: 2.3.1
 
 The mirrored Chinese edition of this document is `GETTING_STARTED_zh.md`. The two
 files are maintained in lockstep, section by section. For the full reference see

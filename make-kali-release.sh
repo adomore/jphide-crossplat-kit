@@ -12,7 +12,7 @@
 # Usage:  sh make-kali-release.sh [stegdetect-build-dir]
 
 set -e
-VER=2.3
+VER=2.3.1
 SD_DIR="${1:-stegdetect-build}"                 # output dir of build-stegdetect-kali.sh
 REL="jphide-crossplat-kit-${VER}-kali-amd64"
 
@@ -54,7 +54,7 @@ strip "$REL"/jpcrack "$REL"/jphoracle "$REL"/jpseek5 "$REL"/v5diff 2>/dev/null |
 
 # --- runtime notes shipped inside the bundle ---
 cat > "$REL/INSTALL.txt" <<'EOF'
-jphide-crossplat-kit 2.3 — Kali Linux (amd64) 预编译发布包 / prebuilt release
+jphide-crossplat-kit 2.3.1 — Kali Linux (amd64) 预编译发布包 / prebuilt release
 
 本包在 Kali Linux (amd64) 上编译，给同版本 Kali 直接运行，无需重新编译。
 Built on Kali Linux (amd64); runs as-is on the same Kali version, no rebuild.

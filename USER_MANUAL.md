@@ -1,7 +1,7 @@
 # jphide-crossplat-kit — User Manual
 
 Author: Anonymous
-Version: 2.3
+Version: 2.3.1
 
 The mirrored Chinese edition of this document is `USER_MANUAL_zh.md`. The two
 files are maintained in lockstep, section by section. If you are new to the kit,

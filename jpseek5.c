@@ -135,8 +135,9 @@ int main(int argc, char **argv) {
             fprintf(stderr, "v5 container: compressed=%d uncompressed=%d\n", complen, rawlen);
             if (complen <= 0 || complen > 100000000) { fprintf(stderr, "implausible length\n"); return 1; }
             d42023c = h[3] & 1;
+            tail = (int)complen * 8 - TAIL1; tail_on = 0;   /* v5 tail gates, mirror of v3 */
             unsigned char *comp = malloc(complen);
-            for (i = 0; i < complen; i++) { unsigned char v = 0; for (j = 0; j < 8; j++) { if ((b = get_bit()) < 0) { fprintf(stderr, "truncated payload\n"); return 1; } b ^= get_code_bit(1); v = (v << 1) | b; } comp[i] = v; }
+            for (i = 0; i < complen; i++) { unsigned char v = 0; for (j = 0; j < 8; j++) { if ((b = get_bit()) < 0) { fprintf(stderr, "truncated payload\n"); return 1; } b ^= get_code_bit(1); v = (v << 1) | b; tail--; } comp[i] = v; }
             FILE *out = fopen(argv[3], "wb"); if (!out) { perror("out"); return 2; }
             if (rawlen) {
                 unsigned char *plain = malloc(rawlen); lzo_uint ol = rawlen;

@@ -14,7 +14,7 @@
 <img alt="selftest" src="https://img.shields.io/badge/selftest-29%2F29%20green-2ea44f?style=flat-square">
 </p>
 
-<p><b>中文</b> · <a href="README_en.md">English</a>　·　作者：adomore　·　版本：2.3</p>
+<p><b>中文</b> · <a href="README_en.md">English</a>　·　作者：adomore　·　版本：2.3.1</p>
 
 </div>
 
@@ -30,7 +30,7 @@
 - **自检** — `selftest.sh`：29 道可复现门禁
 
 > [!TIP]
-> **预编译 Kali (amd64) 包**：到 [Releases](https://github.com/adomore/jphide-crossplat-kit/releases/latest) 下载 `jphide-crossplat-kit-2.3-kali-amd64.tar.gz`，解压后运行 `./selftest.sh` 应当 29/29 全绿。
+> **预编译 Kali (amd64) 包**：到 [Releases](https://github.com/adomore/jphide-crossplat-kit/releases/latest) 下载 `jphide-crossplat-kit-2.3.1-kali-amd64.tar.gz`，解压后运行 `./selftest.sh` 应当 29/29 全绿。
 
 > [!NOTE]
 > **文档导航。** 新手请先看 [`GETTING_STARTED_zh.md`](GETTING_STARTED_zh.md)（英文 [`GETTING_STARTED.md`](GETTING_STARTED.md)）；完整参考是 [`USER_MANUAL_zh.md`](USER_MANUAL_zh.md)（英文 [`USER_MANUAL.md`](USER_MANUAL.md)）。本 README 记录的是工具包为之而生、并已验证的跨平台实证发现。英文镜像为 [`README_en.md`](README_en.md)，两份文件逐节对齐、同步维护。
@@ -324,5 +324,5 @@ Windows 做的容器只有两条路：用 Wine 跑 `jphs05` 的 `jpseek.exe`，�
 ⚖️ <a href="LICENSE">GPL-3.0</a>
 </sub>
 <br><br>
-<sub>作者：匿名者 · 版本 2.3 · 仅供安全研究、数字取证与 CTF 等合法用途</sub>
+<sub>作者：adomore · 版本 2.3.1 · 仅供安全研究、数字取证与 CTF 等合法用途</sub>
 </div>

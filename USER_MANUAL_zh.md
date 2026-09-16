@@ -1,7 +1,7 @@
 # jphide-crossplat-kit —— 用户手册
 
 作者：匿名者
-版本：2.3
+版本：2.3.1
 
 本文档的英文镜像是 `USER_MANUAL.md`。两份文件逐节对齐、同步维护。若你是新手，请先看
 `GETTING_STARTED_zh.md`；工具包背后的跨平台实证，见 `README.md`。
