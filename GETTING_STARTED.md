@@ -1,6 +1,6 @@
 # jphide-crossplat-kit — Getting Started
 
-Author: Anonymous
+Author: adomore
 Version: 2.3.1
 
 The mirrored Chinese edition of this document is `GETTING_STARTED_zh.md`. The two

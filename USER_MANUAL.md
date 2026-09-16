@@ -1,6 +1,6 @@
 # jphide-crossplat-kit — User Manual
 
-Author: Anonymous
+Author: adomore
 Version: 2.3.1
 
 The mirrored Chinese edition of this document is `USER_MANUAL_zh.md`. The two
@@ -438,4 +438,4 @@ independent reimplementation of `break_jphide.c` by Niels Provos (BSD-licensed);
 the algorithm is credited to him. `minilzo` is Markus Oberhumer's LZO under the
 GPL. `jphs-portability.patch` targets `h3xx/jphs`, which is GPL. The Python
 tools (`dict_hygiene.py`, `rule_expand.py`, `crlf_check.py`) and all fixtures were
-produced locally by Anonymous and contain no third-party imagery.
+produced locally by adomore and contain no third-party imagery.

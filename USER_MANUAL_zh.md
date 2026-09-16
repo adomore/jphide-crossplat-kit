@@ -1,6 +1,6 @@
 # jphide-crossplat-kit —— 用户手册
 
-作者：匿名者
+作者：adomore
 版本：2.3.1
 
 本文档的英文镜像是 `USER_MANUAL.md`。两份文件逐节对齐、同步维护。若你是新手，请先看
@@ -360,4 +360,4 @@ Blowfish 没有可利用的缺陷，所以绕不开密钥调度、除口令本�
 中的头部验证逻辑，是对 Niels Provos 的 `break_jphide.c`（BSD 许可）的独立重实现，算法归功于他。
 `minilzo` 是 Markus Oberhumer 的 LZO，GPL 许可。`jphs-portability.patch` 针对 GPL 许可的
 `h3xx/jphs`。Python 工具（`dict_hygiene.py`、`rule_expand.py`、`crlf_check.py`）与全部
-fixtures 均由匿名者本地生成，不含任何第三方图像素材。
+fixtures 均由 adomore 本地生成，不含任何第三方图像素材。

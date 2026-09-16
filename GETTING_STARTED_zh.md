@@ -1,6 +1,6 @@
 # jphide-crossplat-kit —— 新手入门
 
-作者：匿名者
+作者：adomore
 版本：2.3.1
 
 本文档的英文镜像是 `GETTING_STARTED.md`。两份文件逐节对齐、同步维护。完整参考见
